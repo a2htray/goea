@@ -3,6 +3,7 @@ package goea
 import (
 	"errors"
 	"math/rand"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -21,20 +22,6 @@ var rng = rand.New(rand.NewSource(time.Now().UnixNano()))
 var (
 	errorNumOfComponents  = errors.New("the number of components must be larger then 0")
 	errorNumOfIndividuals = errors.New("the number of individuals must be larger then zero")
-)
-
-// 与上下限相关的错误
-var (
-	errorBoundaryNumIncompatible = errors.New("the numbers of both Upper and Lower are incompatible")
-	errorBoundaryComponentValue  = errors.New("the values of components in Upper and Lower are not proper")
-	errorBoundaryNumNotThanTo    = errors.New("the given number is larger then the number of components")
-)
-
-// 个体生成策略常量
-const (
-	GenerateStrategyRandom = iota
-	GenerateStrategyMedium
-	GenerateStrategyBoundary
 )
 
 // Individual 个体
@@ -124,6 +111,55 @@ func (b Boundary) CheckSelf() {
 			panic(errorBoundaryComponentValue)
 		}
 	}
+}
+
+type eaModel struct {
+	Population
+	Boundary
+	M, N int
+	IterNum int
+	// FC 目标函数
+	FC func([]float64) float64
+	// FNC 适应值集合
+	FNC      []float64
+	// 每一代最优的适应值
+	perFNC []float64
+	// 每一代最优的个体
+	perIndividuals []Individual
+}
+
+// bestIndividual 求当前种群最好的个体及其适应值
+func bestIndividual(population Population, fc func([]float64) float64) (Individual, float64) {
+	sort.Slice(population, func(i, j int) bool {
+		return population[i].Compare(population[j], fc)
+	})
+
+	return population[0], population[0].ApplyTo(fc)
+}
+
+// BestIndividual 求当前种群最好的个体及其适应值
+func (e *eaModel) BestIndividual() (Individual, float64) {
+	return bestIndividual(e.Population, e.FC)
+}
+
+// calculateFNC 计算适应值
+func (e *eaModel) calculateFNC() {
+	e.FNC = e.ApplyTo(e.FC)
+}
+
+func newEAModel(m, n int, boundary Boundary, iterNum int, fc func([]float64) float64) *eaModel {
+	model := &eaModel{
+		Population: initPopulation(m, n, boundary),
+		M: m,
+		N:  n,
+		Boundary:  boundary,
+		IterNum:  iterNum,
+		FC:  fc,
+		perFNC:  make([]float64, iterNum),
+		perIndividuals:  make([]Individual, iterNum),
+	}
+	model.calculateFNC()
+	return model
 }
 
 func initPopulation(m, n int, boundary Boundary) (population Population) {

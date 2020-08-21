@@ -52,3 +52,34 @@ func TestShuffleSliceInt(t *testing.T) {
 	rng := rand.New(rand.NewSource(time.Now().Unix()))
 	fmt.Println(ShuffleSliceInt(RangeInt(0, 10), rng))
 }
+
+func TestSumFloat64(t *testing.T) {
+	a := []float64{1, 2, 3, 4, 5, 7}
+	if SumFloat64(a) != 22 {
+		t.Fatal("SumFloat64(a)=22")
+	}
+
+	b := []float64{1.2, 2.3, 3.0, 4.2, 5.0, 7.0}
+	if SumFloat64(b) != 22.7 {
+		t.Fatal("SumFloat64(b)=22.7")
+	}
+}
+
+func TestDivideSliceFloat64(t *testing.T) {
+	a := []float64{1, 2, 3, 4, 5, 7}
+	b := SumFloat64(a)
+	fmt.Println(DivideSliceFloat64(a, b))
+	fmt.Println(SumFloat64(DivideSliceFloat64(a, b)))
+	if SumFloat64(DivideSliceFloat64(a, b)) != 1 {
+		t.Fatal("the sum must to be 1")
+	}
+}
+
+func TestRandomChoicePdfInt(t *testing.T) {
+	s := []int{1, 2, 3, 4}
+	pdf := []float64{0.4, 0.4, 0.1, 0.1}
+
+	for i := 0; i < 10; i++ {
+		t.Log(RandomChoicePdfInt(s, pdf))
+	}
+}

@@ -1,5 +1,7 @@
 ## 三系杂交水稻优化算法(HRO)
 
+Ye, Z., Ma, L., & Chen, H. (2016, August). A hybrid rice optimization algorithm. In 2016 11th International Conference on Computer Science & Education (ICCSE) (pp. 169-174). IEEE.
+
 ### 灵感来源
 
 杂种优势是生物学中的普遍现象，利用杂种优势提高作物产量和品质是现代农业科学的最重大成就之一。

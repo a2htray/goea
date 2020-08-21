@@ -12,25 +12,9 @@ var SelfingMaxNum = 10
 // HRO 三系杂交水稻算法
 // 参考文献 1
 type HRO struct {
-	Population
-	M, N int
-	Boundary
-	IterNum int
-	// FC 目标函数
-	FC func([]float64) float64
-	// FNC 适应值集合
-	FNC      []float64
+	*eaModel
 	// 各系植株的个数
 	LineSize int
-	// 每一代最优的适应值
-	perFNC []float64
-	// 每一代最优的个体
-	perIndividuals []Individual
-}
-
-// calculateFNC 计算适应值
-func (h *HRO) calculateFNC() {
-	h.FNC = h.ApplyTo(h.FC)
 }
 
 // String 算法字符串打印
@@ -145,17 +129,11 @@ func (h *HRO) Run() {
 // NewHRO 生成 HRO 算法
 func NewHRO(m, n int, boundary Boundary, iterNum int, fc func([]float64) float64) (hro *HRO) {
 	hro = new(HRO)
-	hro.Population = initPopulation(m, n, boundary)
-	hro.M = m
-	hro.N = n
-	hro.Boundary = boundary
-	hro.IterNum = iterNum
-	hro.FC = fc
+	hro.eaModel = newEAModel(m, n, boundary, iterNum, fc)
+
 	hro.LineSize = m / hroLineNum
 	hro.calculateFNC()
 	hro.Sort()
-	hro.perFNC = make([]float64, iterNum)
-	hro.perIndividuals = make([]Individual, iterNum)
 
 	// 最大自交次数不应超过基因的个数
 	if SelfingMaxNum > hro.N {

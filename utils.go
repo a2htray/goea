@@ -76,3 +76,42 @@ func ShuffleSliceInt(slice []int, rng *rand.Rand) []int {
 
 	return slice
 }
+
+// SumFloat64 求和
+func SumFloat64(slice []float64) float64 {
+	ret := float64(0)
+	for _, v := range slice {
+		ret += v
+	}
+	return ret
+}
+
+// DivideSliceFloat64 slice 除以一个除数
+func DivideSliceFloat64(slice []float64, divider float64) []float64 {
+	ret := make([]float64, len(slice))
+	for i, v := range slice {
+		ret[i] = v / divider
+	}
+	return ret
+}
+
+var (
+	errorSumNotOne = errors.New("the sum is not equal to 1")
+	errorRangeNotEqual = errors.New("the index range is not equal in both slice")
+)
+
+// RandomChoicePdf 依概率选择
+func RandomChoicePdfInt(slice []int, pdf []float64) int {
+	if len(pdf) == 0 {
+		return slice[0]
+	}
+
+	var choices []int
+	for i, w := range pdf {
+		wi := int(w * 10)
+		for j := 0; j < wi; j++ {
+			choices = append(choices, i)
+		}
+	}
+	return slice[choices[rng.Int()%len(choices)]]
+}
