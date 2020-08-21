@@ -1,4 +1,5 @@
-## 三系杂交水稻优化算法(HRO)
+三系杂交水稻优化算法(HRO)
+=========================================
 
 Ye, Z., Ma, L., & Chen, H. (2016, August). A hybrid rice optimization algorithm. In 2016 11th International Conference on Computer Science & Education (ICCSE) (pp. 169-174). IEEE.
 
