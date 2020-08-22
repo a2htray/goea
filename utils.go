@@ -142,3 +142,8 @@ func RemoveSliceInt(slice []int, needle int, n int) []int {
 
 	return ret
 }
+
+// FindNearestInt 返回与浮点数最近的整数
+func FindNearestInt(v float64) int {
+	return int(v+0.5)
+}

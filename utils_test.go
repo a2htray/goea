@@ -117,3 +117,17 @@ func TestRemoveSliceInt(t *testing.T) {
 		t.Fatal("RemoveSliceInt does not work")
 	}
  }
+
+func TestFindNearestInt(t *testing.T) {
+	v := 0.9
+
+	if FindNearestInt(v) != 1 {
+		t.Fatal("should be 1")
+	}
+
+	v = 0.01
+
+	if FindNearestInt(v) != 0 {
+		t.Fatal("should be 0")
+	}
+}
