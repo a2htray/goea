@@ -32,6 +32,7 @@ func main() {
 ```go
 import "github.com/a2htray/goea"
 
+// 差分算法 DE/best/2/bin
 func main() {
 	config := goea.DefaultDEConfig()
     config.Mode = goea.DEModeBest2bin
