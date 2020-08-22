@@ -2,6 +2,7 @@ package goea
 
 import (
 	"errors"
+	"fmt"
 	"math/rand"
 	"sort"
 	"strconv"
@@ -26,6 +27,39 @@ var (
 
 // Individual 个体
 type Individual Vector
+
+// Copy 复制
+func (i Individual) Copy() Individual {
+	c := make(Individual, len(i))
+	copy(c, i)
+	return c
+}
+
+func (i Individual) MultipleIndividual(value float64) Individual {
+	c := i.Copy()
+	for index, v := range i {
+		c[index] = v * value
+	}
+	return c
+}
+
+// AddIndividual 与个体相加
+func (i Individual) AddIndividual(value Individual) Individual {
+	c := value.Copy()
+	for index, v := range i {
+		c[index] = c[index] + v
+	}
+	return c
+}
+
+// SubIndividual 与个体相减
+func (i Individual) SubIndividual(value Individual) Individual {
+	c := value.Copy()
+	for index, v := range i {
+		c[index] = v - c[index]
+	}
+	return c
+}
 
 // ApplyTo 将个体应用于特定目标函数，并返回结果
 func (i Individual) ApplyTo(fc func([]float64) float64) (fitness float64) {
@@ -54,6 +88,15 @@ func (i Individual) String() string {
 
 // Population 种群
 type Population []Individual
+
+// Copy
+func (p Population) Copy() Population {
+	c := make(Population, 0, len(p))
+	for _, individual := range p {
+		c = append(c, individual.Copy())
+	}
+	return c
+}
 
 // M 返回种群个数
 func (p Population) M() int {
@@ -120,12 +163,12 @@ type eaModel struct {
 	IterNum int
 	// FC 目标函数
 	FC func([]float64) float64
-	// FNC 适应值集合
-	FNC      []float64
-	// 每一代最优的适应值
-	perFNC []float64
-	// 每一代最优的个体
-	perIndividuals []Individual
+	// CurrentFNC 适应值集合
+	CurrentFNC []float64
+	// HistoryBestFNC 每一代最优的适应值
+	HistoryBestFNC []float64
+	// HistoryBestIndividuals 每一代最优的个体
+	HistoryBestIndividuals []Individual
 }
 
 // bestIndividual 求当前种群最好的个体及其适应值
@@ -134,29 +177,31 @@ func bestIndividual(population Population, fc func([]float64) float64) (Individu
 		return population[i].Compare(population[j], fc)
 	})
 
-	return population[0], population[0].ApplyTo(fc)
+	return population[0].Copy(), population[0].ApplyTo(fc)
 }
 
 // BestIndividual 求当前种群最好的个体及其适应值
 func (e *eaModel) BestIndividual() (Individual, float64) {
-	return bestIndividual(e.Population, e.FC)
+	population := e.Population.Copy()
+	fmt.Println(population)
+	return bestIndividual(population, e.FC)
 }
 
 // calculateFNC 计算适应值
 func (e *eaModel) calculateFNC() {
-	e.FNC = e.ApplyTo(e.FC)
+	e.CurrentFNC = e.ApplyTo(e.FC)
 }
 
 func newEAModel(m, n int, boundary Boundary, iterNum int, fc func([]float64) float64) *eaModel {
 	model := &eaModel{
-		Population: initPopulation(m, n, boundary),
-		M: m,
-		N:  n,
-		Boundary:  boundary,
-		IterNum:  iterNum,
-		FC:  fc,
-		perFNC:  make([]float64, iterNum),
-		perIndividuals:  make([]Individual, iterNum),
+		Population:             initPopulation(m, n, boundary),
+		M:                      m,
+		N:                      n,
+		Boundary:               boundary,
+		IterNum:                iterNum,
+		FC:                     fc,
+		HistoryBestFNC:         make([]float64, iterNum),
+		HistoryBestIndividuals: make([]Individual, iterNum),
 	}
 	model.calculateFNC()
 	return model

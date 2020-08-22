@@ -21,7 +21,7 @@ type HRO struct {
 func (h HRO) String() string {
 	strs := []string{h.Population.String()}
 
-	for i, fitness := range h.FNC {
+	for i, fitness := range h.CurrentFNC {
 		strs = append(strs, strconv.Itoa(i+StartIndex)+" "+strconv.FormatFloat(fitness, 'f', -1, 64))
 	}
 
@@ -32,7 +32,7 @@ func (h HRO) String() string {
 func (h *HRO) hybridization() {
 	for _, maintainer := range h.Population[0:h.LineSize] {
 		// 随机选择的不育系植株下标
-		sterileIndex := RandIntRange(h.LineSize*2, h.M, rng)
+		sterileIndex := RandIntRange(h.LineSize*2, h.M)
 		newSterile := make(Individual, h.N, h.N)
 		for i := 0; i < h.N; i++ {
 			// r1, r2 [0.0, 1.0)
@@ -57,14 +57,14 @@ func (h *HRO) selfing() {
 		for selfingNum := 0; selfingNum < SelfingMaxNum; selfingNum++ {
 			// 第一步是为了算出与自交植株不同植株的下标
 			selectedIndex := currentIndex
-			for _, index := range ShuffleSliceInt(RangeInt(selfingStart, selfingEnd), rng) {
+			for _, index := range ShuffleSliceInt(RangeInt(selfingStart, selfingEnd)) {
 				if index != selectedIndex {
 					selectedIndex = index
 				}
 			}
 
 			// 随机到基因下标
-			geneIndex := RandIntRange(0, h.N, rng)
+			geneIndex := RandIntRange(0, h.N)
 			r := rng.Float64()
 
 			newGene := r*(best[geneIndex]-h.Population[selectedIndex][geneIndex]) + selfinger[geneIndex]
@@ -97,7 +97,7 @@ func (h *HRO) renewal() Individual {
 
 // Sort 进行排序操作
 func (h *HRO) Sort() {
-	mat := MatExpandX(h.Population.mat(), Vector(h.FNC).Mat())
+	mat := MatExpandX(h.Population.mat(), Vector(h.CurrentFNC).Mat())
 	_, n := mat.MN()
 
 	sort.Slice(mat, func(i, j int) bool {
@@ -112,7 +112,7 @@ func (h *HRO) Sort() {
 		h.Population[i] = Individual(vector)
 	}
 
-	h.FNC = mat.Cut(0, -1, n-1, -1).Flat()
+	h.CurrentFNC = mat.Cut(0, -1, n-1, -1).Flat()
 }
 
 func (h *HRO) Run() {
@@ -121,8 +121,8 @@ func (h *HRO) Run() {
 		h.selfing()
 		h.calculateFNC()
 		h.Sort()
-		h.perFNC[i] = h.FNC[0]
-		h.perIndividuals[i] = h.Population[0]
+		h.HistoryBestFNC[i] = h.CurrentFNC[0]
+		h.HistoryBestIndividuals[i] = h.Population[0]
 	}
 }
 

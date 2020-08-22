@@ -124,6 +124,6 @@ func TestHRO_Run2(t *testing.T) {
 	hro.Run()
 
 	for i := 0; i < iterNum; i++ {
-		fmt.Println(i+1, "代:", hro.perIndividuals[i], "->", hro.perFNC[i])
+		fmt.Println(i+1, "代:", hro.HistoryBestIndividuals[i], "->", hro.HistoryBestFNC[i])
 	}
 }

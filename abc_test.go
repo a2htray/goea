@@ -50,6 +50,6 @@ func TestABC_Run(t *testing.T) {
 	abc.Run()
 
 	for i := 0; i < iterNum; i++ {
-		fmt.Println(i+1, "代:", abc.perIndividuals[i], "->", abc.perFNC[i])
+		fmt.Println(i+1, "代:", abc.HistoryBestIndividuals[i], "->", abc.HistoryBestFNC[i])
 	}
 }

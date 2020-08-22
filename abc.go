@@ -16,7 +16,7 @@ type ABC struct {
 func (a ABC) String() string {
 	strs := []string{a.Population.String()}
 
-	for i, fitness := range a.FNC {
+	for i, fitness := range a.CurrentFNC {
 		strs = append(
 			strs,
 			strconv.Itoa(i+StartIndex)+" "+strconv.FormatFloat(fitness, 'f', -1, 64) +
@@ -43,12 +43,12 @@ func (a *ABC) EmployeeStage() {
 func (a *ABC) OnlookerStage()  {
 	selectedRange := RangeInt(0, a.M)
 	for i := 0; i < a.M; i++ {
-		a.FNC = a.ApplyTo(a.FC)
-		nectar := SumFloat64(a.FNC)
+		a.CurrentFNC = a.ApplyTo(a.FC)
+		nectar := SumFloat64(a.CurrentFNC)
 
-		selectedIndex := RandomChoicePdfInt(selectedRange, DivideSliceFloat64(a.FNC, nectar))
+		selectedIndex := RandomChoicePdfInt(selectedRange, DivideSliceFloat64(a.CurrentFNC, nectar))
 		for selectedIndex == i {
-			selectedIndex = RandomChoicePdfInt(selectedRange, DivideSliceFloat64(a.FNC, nectar))
+			selectedIndex = RandomChoicePdfInt(selectedRange, DivideSliceFloat64(a.CurrentFNC, nectar))
 		}
 		newIndividual := make(Individual, a.N)
 		for j := 0; j < a.N; j++ {
@@ -82,7 +82,7 @@ func (a *ABC) Run() {
 		a.EmployeeStage()
 		a.OnlookerStage()
 		a.ScouterStage()
-		a.perIndividuals[i], a.perFNC[i] = a.BestIndividual()
+		a.HistoryBestIndividuals[i], a.HistoryBestFNC[i] = a.BestIndividual()
 	}
 }
 
