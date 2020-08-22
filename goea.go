@@ -2,7 +2,6 @@ package goea
 
 import (
 	"errors"
-	"fmt"
 	"math/rand"
 	"sort"
 	"strconv"
@@ -183,7 +182,7 @@ func bestIndividual(population Population, fc func([]float64) float64) (Individu
 // BestIndividual 求当前种群最好的个体及其适应值
 func (e *eaModel) BestIndividual() (Individual, float64) {
 	population := e.Population.Copy()
-	fmt.Println(population)
+	//fmt.Println(population)
 	return bestIndividual(population, e.FC)
 }
 
