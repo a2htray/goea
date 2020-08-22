@@ -5,8 +5,48 @@
 
 1. [三系杂交水稻优化算法(HRO)](./doc/HRO.md) [1]
 2. [人工蜂群算法](./doc/ABC.md) [2]
-3. [简单差分算法](./doc/DE-Simple.md) [3]
-4. [差分算法](./doc/DE.md) [4]
+3. [简单差分算法 DE/rand/1/bin](./doc/DE-rand-1-bin.md) [3]
+4. [差分算法 DE/best/2/bin](./doc/DE-best-2-bin.md) [4]
+
+### 用法
+
+`DE`
+
+```go
+import "github.com/a2htray/goea"
+
+// 简单差分算法 DE/rand/1/bin
+func main() {
+	iterNum := 10
+    de := goea.NewDE(4, 2, goea.Boundary{
+        Lower: []float64{-10, -10, -10},
+        Upper: []float64{10, 10, 10},
+    }, iterNum, goea.ObjectSphere, goea.DefaultDEConfig())
+    
+    de.Run()
+
+    fmt.Println(de.HistoryBestFNC)
+}
+```
+
+```go
+import "github.com/a2htray/goea"
+
+func main() {
+	config := goea.DefaultDEConfig()
+    config.Mode = goea.DEModeBest2bin
+    
+    iterNum := 20
+    de := goea.NewDE(10, 3, goea.Boundary{
+        Lower: []float64{-10, -10, -10},
+        Upper: []float64{10, 10, 10},
+    }, iterNum, goea.ObjectSphere, goea.config)
+    
+    de.Run()
+    
+    fmt.Println(de.HistoryBestFNC)
+}
+```
 
 **目标函数**
 
