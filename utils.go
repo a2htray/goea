@@ -2,7 +2,6 @@ package goea
 
 import (
 	"errors"
-	"math/rand"
 )
 
 var (
@@ -48,7 +47,7 @@ var (
 )
 
 // RandIntRange 返回指定区间内的随机整数
-func RandIntRange(min, max int, rng *rand.Rand) int {
+func RandIntRange(min, max int) int {
 	if max < min {
 		panic(errorMaxMin)
 	}
@@ -69,11 +68,10 @@ func RangeInt(min, max int) []int {
 }
 
 // ShuffleSliceInt 打乱 int slice 的排序
-func ShuffleSliceInt(slice []int, rng *rand.Rand) []int {
+func ShuffleSliceInt(slice []int) []int {
 	rng.Shuffle(len(slice), func(i, j int) {
 		slice[i], slice[j] = slice[j], slice[i]
 	})
-
 	return slice
 }
 
@@ -114,4 +112,33 @@ func RandomChoicePdfInt(slice []int, pdf []float64) int {
 		}
 	}
 	return slice[choices[rng.Int()%len(choices)]]
+}
+
+// RemoveSliceInt 从整型 slice 中删除特定元素
+// 如果 n = -1，则删除所有相同的元素
+func RemoveSliceInt(slice []int, needle int, n int) []int {
+	l := len(slice)
+	if n <= -1 {
+		n = len(slice)
+	}
+
+	ret := make([]int, 0)
+	counter := 0
+
+	for i, v := range slice {
+		if v != needle {
+			ret = append(ret, v)
+		} else {
+			counter++
+		}
+
+		if counter >= n {
+			if i < l {
+				ret = append(ret, slice[i+1:]...)
+			}
+			break
+		}
+	}
+
+	return ret
 }

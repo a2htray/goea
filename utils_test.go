@@ -2,9 +2,7 @@ package goea
 
 import (
 	"fmt"
-	"math/rand"
 	"testing"
-	"time"
 )
 
 func TestSubtract(t *testing.T) {
@@ -37,9 +35,8 @@ func TestVectorExpand(t *testing.T) {
 }
 
 func TestRandIntRange(t *testing.T) {
-	rng := rand.New(rand.NewSource(time.Now().Unix()))
 	for i := 0; i < 10; i++ {
-		r := RandIntRange(1, 100, rng)
+		r := RandIntRange(1, 100)
 		fmt.Println(r)
 	}
 }
@@ -49,8 +46,7 @@ func TestRangeInt(t *testing.T) {
 }
 
 func TestShuffleSliceInt(t *testing.T) {
-	rng := rand.New(rand.NewSource(time.Now().Unix()))
-	fmt.Println(ShuffleSliceInt(RangeInt(0, 10), rng))
+	fmt.Println(ShuffleSliceInt(RangeInt(0, 10)))
 }
 
 func TestSumFloat64(t *testing.T) {
@@ -83,3 +79,41 @@ func TestRandomChoicePdfInt(t *testing.T) {
 		t.Log(RandomChoicePdfInt(s, pdf))
 	}
 }
+
+func TestRemoveSliceInt(t *testing.T) {
+	s := []int{1, 2, 3, 1, 2, 3, 1, 2, 3}
+
+	newS := RemoveSliceInt(s, 1, 3)
+
+	t.Log(newS, s, newS[0])
+	if newS[0] != 2 || newS[1] != 3 || newS[2] != 2 || newS[3] != 3 || newS[4] != 2 || newS[5] != 3 {
+		t.Fatal("RemoveSliceInt does not work")
+	}
+
+	newS = RemoveSliceInt(s, 1, 2)
+	t.Log(newS, s)
+	if newS[0] != 2 || newS[1] != 3 || newS[2] != 2 || newS[3] != 3 || newS[4] != 1 || newS[5] != 2 || newS[6] != 3 {
+		t.Fatal("RemoveSliceInt does not work")
+	}
+
+	newS = RemoveSliceInt(s, 1, -1)
+	t.Log(newS, s)
+	if newS[0] != 2 || newS[1] != 3 || newS[2] != 2 || newS[3] != 3 || newS[4] != 2 || newS[5] != 3 {
+		t.Fatal("RemoveSliceInt does not work")
+	}
+
+	newS = RemoveSliceInt([]int{1, 1, 1, 1, 1}, 1, 1)
+	if len(newS) != 4 {
+		t.Fatal("RemoveSliceInt does not work")
+	}
+
+	newS = RemoveSliceInt([]int{1, 1, 1, 1, 1}, 1, -1)
+	if len(newS) != 0 {
+		t.Fatal("RemoveSliceInt does not work")
+	}
+
+	newS = RemoveSliceInt([]int{1, 1, 1, 1, 2}, 2, -1)
+	if len(newS) != 4 {
+		t.Fatal("RemoveSliceInt does not work")
+	}
+ }

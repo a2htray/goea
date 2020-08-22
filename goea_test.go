@@ -120,3 +120,18 @@ func TestDivide(t *testing.T) {
 	fmt.Println(9 / 3)
 	fmt.Println(10 / 3)
 }
+
+func TestIndividual_Copy(t *testing.T) {
+	src := Individual{1, 2, 3}
+	dest := src.Copy()
+
+	for i, v := range src {
+		if v != dest[i] {
+			t.Fatal("not equal")
+		}
+	}
+
+	if &src == &dest {
+		t.Fatal("the pointer should not be equal")
+	}
+}
