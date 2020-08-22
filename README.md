@@ -17,7 +17,7 @@ import "github.com/a2htray/goea"
 
 // 简单差分算法 DE/rand/1/bin
 func main() {
-	iterNum := 10
+    iterNum := 10
     de := goea.NewDE(4, 2, goea.Boundary{
         Lower: []float64{-10, -10, -10},
         Upper: []float64{10, 10, 10},
@@ -34,7 +34,7 @@ import "github.com/a2htray/goea"
 
 // 差分算法 DE/best/2/bin
 func main() {
-	config := goea.DefaultDEConfig()
+    config := goea.DefaultDEConfig()
     config.Mode = goea.DEModeBest2bin
     
     iterNum := 20
