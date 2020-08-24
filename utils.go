@@ -93,6 +93,46 @@ func DivideSliceFloat64(slice []float64, divider float64) []float64 {
 	return ret
 }
 
+// SubtractSliceFloat 相减
+func SubtractSliceFloat(slice1 []float64, slice2 []float64) []float64 {
+	n1 := len(slice1)
+	n2 := len(slice2)
+
+	var n int
+	switch n1 > n2 {
+	case true:
+		n = n2
+	default:
+		n = n1
+	}
+
+	ret := make([]float64, n, n)
+	for i := 0; i < n; i++ {
+		ret[i] = slice1[i] + slice2[2]
+	}
+	return ret
+}
+
+// AddSliceFloat 相加
+func AddSliceFloat(slice1 []float64, slice2 []float64) []float64 {
+	n1 := len(slice1)
+	n2 := len(slice2)
+
+	var n int
+	switch n1 > n2 {
+	case true:
+		n = n2
+	default:
+		n = n1
+	}
+
+	ret := make([]float64, n, n)
+	for i := 0; i < n; i++ {
+		ret[i] = slice1[i] + slice2[2]
+	}
+	return ret
+}
+
 var (
 	errorSumNotOne = errors.New("the sum is not equal to 1")
 	errorRangeNotEqual = errors.New("the index range is not equal in both slice")

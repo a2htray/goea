@@ -18,3 +18,13 @@ func (v Vector) Mat() Mat {
 	}
 	return mat
 }
+
+// newVector 生成向量
+func newVector(n int, upper []float64, lower []float64) []float64 {
+	vector := make([]float64, 0)
+	diff := Subtract(upper, lower)
+	for i := 0; i < n; i++ {
+		vector = append(vector, lower[0] + rng.Float64()*diff[i])
+	}
+	return vector
+}

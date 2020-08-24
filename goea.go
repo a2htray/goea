@@ -170,6 +170,15 @@ type eaModel struct {
 	HistoryBestIndividuals []Individual
 }
 
+// GetHistoryBestIndividual 得到历史最优的解
+func (e *eaModel) GetHistoryBestIndividual(iterNum int) Individual {
+	if iterNum != 0 {
+		iterNum -= 1
+	}
+	best, _ := bestIndividual(e.HistoryBestIndividuals[0:iterNum+1], e.FC)
+	return best
+}
+
 // bestIndividual 求当前种群最好的个体及其适应值
 func bestIndividual(population Population, fc func([]float64) float64) (Individual, float64) {
 	sort.Slice(population, func(i, j int) bool {
@@ -177,6 +186,10 @@ func bestIndividual(population Population, fc func([]float64) float64) (Individu
 	})
 
 	return population[0].Copy(), population[0].ApplyTo(fc)
+}
+
+func (e *eaModel) AssignBestIndividual() {
+	e.HistoryBestIndividuals[0], e.HistoryBestFNC[0] = e.BestIndividual()
 }
 
 // BestIndividual 求当前种群最好的个体及其适应值
@@ -229,12 +242,7 @@ func NewIndividual(n int, boundary Boundary) (individual Individual) {
 	if n > un || n > ln {
 		panic(errorBoundaryNumNotThanTo)
 	}
-
-	diff := Subtract(boundary.Upper, boundary.Lower)
-	for i := 0; i < n; i++ {
-		individual = append(individual, boundary.Lower[i]+rng.Float64()*diff[i])
-	}
-	return
+	return Individual(newVector(n, boundary.Upper, boundary.Lower))
 }
 
 // compare 传递目标函数并比较两个个体，返回较优者
