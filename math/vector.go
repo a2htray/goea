@@ -74,8 +74,8 @@ func (v Vector) Divide(divider float64) error {
 	return nil
 }
 
-// vectorAdd ...
-func vectorAdd(v1, v2 Vector) (Vector, error) {
+// VectorAdd ...
+func VectorAdd(v1, v2 Vector) (Vector, error) {
 	if v1.N() != v2.N() {
 		return nil, errorLengthNotEqual
 	}
@@ -86,20 +86,20 @@ func vectorAdd(v1, v2 Vector) (Vector, error) {
 	return ret, nil
 }
 
-// vectorSub ...
-func vectorSub(v1, v2 Vector) (Vector, error) {
+// VectorSub ...
+func VectorSub(v1, v2 Vector) (Vector, error) {
 	if v1.N() != v2.N() {
 		return nil, errorLengthNotEqual
 	}
 	ret := v1.Copy()
 	for i := 0; i < v1.N(); i++ {
-		ret[i] -= v1[i]
+		ret[i] -= v2[i]
 	}
 	return ret, nil
 }
 
-// vectorMultiply ...
-func vectorMultiply(v Vector, factor float64) Vector {
+// VectorMultiply ...
+func VectorMultiply(v Vector, factor float64) Vector {
 	v1 := v.Copy()
 	for i := 0; i < v.N(); i++ {
 		v1[i] *= factor
@@ -107,8 +107,8 @@ func vectorMultiply(v Vector, factor float64) Vector {
 	return v1
 }
 
-// vectorDivider ...
-func vectorDivide(v Vector, divider float64) (Vector, error) {
+// VectorDivide ...
+func VectorDivide(v Vector, divider float64) (Vector, error) {
 	if divider == 0 {
 		return nil, errorDividerZero
 	}

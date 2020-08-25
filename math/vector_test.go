@@ -142,7 +142,7 @@ func TestVectorAdd(t *testing.T) {
 		}
 	}()
 
-	sumVector, err := vectorAdd(v1, v2)
+	sumVector, err := VectorAdd(v1, v2)
 
 	if err != nil {
 		panic(err)
@@ -167,7 +167,7 @@ func TestVectorSub(t *testing.T) {
 		}
 	}()
 
-	subVector, err := vectorSub(v1, v2)
+	subVector, err := VectorSub(v1, v2)
 
 	if err != nil {
 		panic(err)
@@ -186,7 +186,7 @@ func TestVectorMultiply(t *testing.T) {
 	v := Vector{1, 2, 3}
 	factor := float64(2)
 
-	multiplyVector := vectorMultiply(v, factor)
+	multiplyVector := VectorMultiply(v, factor)
 
 	if &v == &multiplyVector {
 		t.Fatal("&v == &multiplyVector, error")
@@ -206,7 +206,7 @@ func TestVectorDivide(t *testing.T) {
 		}
 	}()
 
-	divideVector, err := vectorDivide(v, divider)
+	divideVector, err := VectorDivide(v, divider)
 
 	if err != nil {
 		panic(err)
