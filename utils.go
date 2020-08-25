@@ -187,3 +187,64 @@ func RemoveSliceInt(slice []int, needle int, n int) []int {
 func FindNearestInt(v float64) int {
 	return int(v+0.5)
 }
+
+/* 向量的四则运算 */
+// VectorAdd ...
+func VectorAdd(a, b []float64) []float64 {
+	n1 := len(a)
+	n2 := len(b)
+	var n int
+	switch n1 > n2 {
+	case true:
+		n = n2
+	default:
+		n = n1
+	}
+
+	ret := make([]float64, n)
+	for i := 0; i < n; i++ {
+		ret[i] = a[i] + b[i]
+	}
+	return ret
+}
+
+// VectorSub ...
+func VectorSub(a, b []float64) []float64 {
+	n1 := len(a)
+	n2 := len(b)
+	var n int
+	switch n1 > n2 {
+	case true:
+		n = n2
+	default:
+		n = n1
+	}
+
+	ret := make([]float64, n)
+	for i := 0; i < n; i++ {
+		ret[i] = a[i] - b[i]
+	}
+	return ret
+}
+
+// VectorMultiply ...
+func VectorMultiply(a []float64, factor float64) []float64 {
+	ret := make([]float64, len(a))
+	copy(ret, a)
+
+	for i, v := range ret {
+		ret[i] = v * factor
+	}
+	return ret
+}
+
+// VectorDivide ...
+func VectorDivide(a []float64, divider float64) []float64 {
+	ret := make([]float64, len(a))
+	copy(ret, a)
+
+	for i, v := range ret {
+		ret[i] = v / divider
+	}
+	return ret
+}
