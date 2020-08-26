@@ -1,8 +1,10 @@
 package goea
 
 import (
+	"fmt"
+	"github.com/a2htray/goea/base"
+	"github.com/a2htray/goea/math"
 	"sort"
-	"strconv"
 	"strings"
 )
 
@@ -12,46 +14,68 @@ var SelfingMaxNum = 10
 // HRO 三系杂交水稻算法
 // 参考文献 1
 type HRO struct {
-	*eaModel
+	*base.EAModel
 	// 各系植株的个数
 	LineSize int
 }
 
 // String 算法字符串打印
 func (h HRO) String() string {
-	strs := []string{h.Population.String()}
-
-	for i, fitness := range h.CurrentFNC {
-		strs = append(strs, strconv.Itoa(i+StartIndex)+" "+strconv.FormatFloat(fitness, 'f', -1, 64))
-	}
+	strs := []string{"a", "b"}
 
 	return strings.Join(strs, "\n")
 }
 
 // hybridization 杂交
-func (h *HRO) hybridization() {
+func (h *HRO) hybridization(iter int) {
+	if h.LogFlag {
+		h.Log.WriteString(fmt.Sprintf("第%d次迭代 hybridization 阶段:\n", iter+1))
+	}
 	for _, maintainer := range h.Population[0:h.LineSize] {
+
 		// 随机选择的不育系植株下标
 		sterileIndex := RandIntRange(h.LineSize*2, h.M)
-		newSterile := make(Individual, h.N, h.N)
-		for i := 0; i < h.N; i++ {
-			// r1, r2 [0.0, 1.0)
-			r1, r2 := rng.Float64(), rng.Float64()
-			newGene := (r1*maintainer[i] + r2*h.Population[sterileIndex][i]) / (r1 + r2)
-			newSterile[i] = newGene
+		if h.LogFlag {
+			h.Log.WriteString(fmt.Sprintf("选择保持系植株:(%v,%f)\n", maintainer.Vector, maintainer.FitnessValue))
+			h.Log.WriteString(fmt.Sprintf("随机选择的不育系植株:(%v,%f)\n", h.Population[sterileIndex].Vector, h.Population[sterileIndex].FitnessValue))
 		}
-		h.Population[sterileIndex] = compare(h.Population[sterileIndex], newSterile, h.FC)
+		newSterile := base.Individual{
+			Vector: make(math.Vector, h.N, h.N),
+		}
+		for i := 0; i < h.N; i++ {
+			r1, r2 := rng.Float64(), rng.Float64()
+			top := r1*maintainer.Vector[i] + r2*h.Population[sterileIndex].Vector[i]
+			bottom := r1 + r2
+			newGene :=  top/bottom
+			newSterile.Vector[i] = newGene
+		}
+		newSterile.FitnessValue = h.FC(newSterile.Vector)
+		if h.LogFlag {
+			h.Log.WriteString(fmt.Sprintf("杂交后新植株:(%v,%f)\n", newSterile.Vector, newSterile.FitnessValue))
+		}
+
+		h.Population[sterileIndex] = base.CompareWithCalculate(h.Population[sterileIndex], newSterile, h.Minimum, h.FC)
+		if h.LogFlag {
+			h.Log.WriteString(fmt.Sprintf("比较后更新的新植株:(%v,%f)\n", h.Population[sterileIndex].Vector, h.Population[sterileIndex].FitnessValue))
+		}
 	}
 }
 
 // selfing 自交
-func (h *HRO) selfing() {
+func (h *HRO) selfing(iter int) {
+	if h.LogFlag {
+		h.Log.WriteString(fmt.Sprintf("第%d次迭代 selfing 阶段:\n", iter+1))
+	}
 	selfingStart := h.LineSize + 1
 	selfingEnd := h.LineSize * 2
 
 	for i, selfinger := range h.Population[selfingStart:selfingEnd] {
-		// 当前恢复系中最优的个体
+		// 当前恢复系中最优的植株
 		best := h.Population[h.LineSize]
+		if h.LogFlag {
+			h.Log.WriteString(fmt.Sprintf("当前恢复系最优植株:(%v,%f)\n", best.Vector, best.FitnessValue))
+			h.Log.WriteString(fmt.Sprintf("与当前恢复系最优植株自交的植株:(%v,%f)\n", selfinger.Vector, selfinger.FitnessValue))
+		}
 		currentIndex := selfingStart + i
 		isReplaced := false
 		for selfingNum := 0; selfingNum < SelfingMaxNum; selfingNum++ {
@@ -67,72 +91,128 @@ func (h *HRO) selfing() {
 			geneIndex := RandIntRange(0, h.N)
 			r := rng.Float64()
 
-			newGene := r*(best[geneIndex]-h.Population[selectedIndex][geneIndex]) + selfinger[geneIndex]
-			newSelfinger := append(selfinger[:geneIndex], newGene)
-			newSelfinger = append(newSelfinger, selfinger[geneIndex+1:]...)
+			newGene := r*(best.Vector[geneIndex]-h.Population[selectedIndex].Vector[geneIndex]) + selfinger.Vector[geneIndex]
+			// 使用边界进行判定
+			if newGene > h.Upper.Vector()[geneIndex] {
+				newGene = h.Upper.Vector()[geneIndex]
+			}
+			if newGene < h.Lower.Vector()[geneIndex] {
+				newGene = h.Lower.Vector()[geneIndex]
+			}
 
-			if Individual(newSelfinger).Compare(selfinger, h.FC) {
+			newVector := append(selfinger.Vector[:geneIndex], newGene)
+			newVector = append(newVector, selfinger.Vector[geneIndex+1:]...)
+
+			newIndividual := base.Individual{
+				Vector: newVector,
+				FitnessValue: h.FC(newVector),
+			}
+
+			if h.LogFlag {
+				h.Log.WriteString(fmt.Sprintf("自交后的新植株:(%v,%f)\n", newIndividual.Vector, newIndividual.FitnessValue))
+			}
+			
+			if newIndividual.CompareTo(selfinger, h.Minimum, h.FC) {
 				isReplaced = true
-				h.Population[currentIndex] = Individual(newSelfinger)
-				// 如果生成的植株优于当前最优，则两者交换位置
-				if h.Population[currentIndex].Compare(best, h.FC) {
-					h.Population[h.LineSize], h.Population[currentIndex] = h.Population[currentIndex], h.Population[h.LineSize]
+				h.Population[currentIndex] = newIndividual
+				if h.LogFlag {
+					h.Log.WriteString(fmt.Sprintf("自交后的新植株优于原植株，发生替换:(%v,%f)\n", h.Population[currentIndex].Vector, h.Population[currentIndex].FitnessValue))
 				}
-				break
+				if h.Population[currentIndex].CompareTo(best, h.Minimum, h.FC) {
+					h.Population[h.LineSize], h.Population[currentIndex] = h.Population[currentIndex], h.Population[h.LineSize]
+					if h.LogFlag {
+						h.Log.WriteString(fmt.Sprintf("自交后的新植株优于原最优不育系植株，发生替换:\n"))
+						h.Log.WriteString(fmt.Sprintf("当前最优不育系植株:(%v,%f)", h.Population[h.LineSize].Vector, h.Population[h.LineSize].FitnessValue))
+					}
+				}
 			}
 		}
 
 		if !isReplaced {
-			h.Population[currentIndex] = h.renewal()
-			if h.Population[currentIndex].Compare(best, h.FC) {
+			h.Population[currentIndex] = h.renewal(iter)
+			if h.LogFlag {
+				h.Log.WriteString(fmt.Sprintf("自交后的新植株次于原植株，发生 renewal:(%v,%f)\n", h.Population[currentIndex].Vector, h.Population[currentIndex].FitnessValue))
+			}
+			if h.Population[currentIndex].CompareTo(best, h.Minimum, h.FC) {
 				h.Population[h.LineSize], h.Population[currentIndex] = h.Population[currentIndex], h.Population[h.LineSize]
+				if h.LogFlag {
+					h.Log.WriteString(fmt.Sprintf("renewal 后的新植株优于原最优不育系植株，发生替换:\n"))
+					h.Log.WriteString(fmt.Sprintf("当前最优不育系植株:(%v,%f)", h.Population[h.LineSize].Vector, h.Population[h.LineSize].FitnessValue))
+				}
 			}
 		}
 	}
 }
 
-func (h *HRO) renewal() Individual {
-	return NewIndividual(h.N, h.Boundary)
+func (h *HRO) renewal(iter int) base.Individual {
+	ret := base.NewIndividual(h.N, h.Upper, h.Lower)
+	ret.FitnessValue = h.FC(ret.Vector)
+	return ret
 }
 
 // Sort 进行排序操作
 func (h *HRO) Sort() {
-	mat := MatExpandX(h.Population.mat(), Vector(h.CurrentFNC).Mat())
-	_, n := mat.MN()
-
-	sort.Slice(mat, func(i, j int) bool {
-		if Minimum {
-			return mat[i][n-1] < mat[j][n-1]
+	sort.Slice(h.Population, func(i, j int) bool {
+		if h.Minimum {
+			return h.Population[i].FitnessValue < h.Population[j].FitnessValue
 		} else {
-			return mat[i][n-1] > mat[j][n-1]
+			return h.Population[i].FitnessValue > h.Population[j].FitnessValue
 		}
 	})
-
-	for i, vector := range mat.Cut(0, -1, 0, n-1) {
-		h.Population[i] = Individual(vector)
-	}
-
-	h.CurrentFNC = mat.Cut(0, -1, n-1, -1).Flat()
 }
 
 func (h *HRO) Run() {
+	if h.LogFlag {
+		_, err := h.Log.WriteString("初始状态:\n")
+		if err != nil {
+			panic(err)
+		}
+		for i, individual := range h.Population {
+			var tag string
+			switch i / h.LineSize {
+			case 0:
+				tag = "保持系"
+			case 1:
+				tag = "恢复系"
+			default:
+				tag = "不育系"
+
+			}
+			h.Log.WriteString(fmt.Sprintf("%s:%v,%f\n", tag, individual.Vector, individual.FitnessValue))
+		}
+		h.Log.WriteString("初始最优解为:\n")
+		h.Log.WriteString(fmt.Sprintf("%v,%f\n", h.Population[0].Vector, h.Population[0].FitnessValue))
+	}
+
 	for i := 0; i < h.IterNum; i++ {
-		h.hybridization()
-		h.selfing()
-		h.calculateFNC()
+		h.hybridization(i)
+		h.selfing(i)
 		h.Sort()
-		h.HistoryBestFNC[i] = h.CurrentFNC[0]
 		h.HistoryBestIndividuals[i] = h.Population[0]
+
+		if h.LogFlag {
+			h.Log.WriteString(fmt.Sprintf("第%d次迭代后，种群状态:\n", i+1))
+			for i, individual := range h.Population {
+				var tag string
+				switch i / h.LineSize {
+				case 0:
+					tag = "保持系"
+				case 1:
+					tag = "恢复系"
+				default:
+					tag = "不育系"
+				}
+				h.Log.WriteString(fmt.Sprintf("%s:%v,%f\n", tag, individual.Vector, individual.FitnessValue))
+			}
+		}
 	}
 }
 
 // NewHRO 生成 HRO 算法
-func NewHRO(m, n int, boundary Boundary, iterNum int, fc func([]float64) float64) (hro *HRO) {
+func NewHRO(m, n int, iterNum int, minimum bool, limit base.Limit, fc func([]float64) float64) (hro *HRO) {
 	hro = new(HRO)
-	hro.eaModel = newEAModel(m, n, boundary, iterNum, fc)
-
+	hro.EAModel = base.NewEAModel(m, n, iterNum, minimum, limit, fc)
 	hro.LineSize = m / hroLineNum
-	hro.calculateFNC()
 	hro.Sort()
 
 	// 最大自交次数不应超过基因的个数
