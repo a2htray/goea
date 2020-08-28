@@ -11,7 +11,7 @@ func TestNewHRO(t *testing.T) {
 	m := 60
 	n := 10
 	iterNum := 300
-	minimum := false
+	minimum := true
 	limit := base.Limit{
 		Upper: base.Boundary{10, 10, 10, 10, 10, 10, 10, 10, 10, 10},
 		Lower: base.Boundary{-10, -10, -10, -10, -10, -10, -10, -10, -10, -10},
@@ -19,7 +19,7 @@ func TestNewHRO(t *testing.T) {
 	logFile, _ := os.Create("D:\\workspace\\github.com\\a2htray\\goea\\log\\hro.log")
 	defer logFile.Close()
 
-	model := NewHRO(m, n, iterNum, minimum, limit, ObjectSphere)
+	model := NewHRO(m, n, iterNum, minimum, limit, ObjectGriewangk)
 	model.OpenLog(logFile)
 
 	model.Run()
